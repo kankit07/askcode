@@ -12,7 +12,7 @@ const SidebarLayout = async ({ children }: Props) => {
     <SidebarProvider>
       <AppSidebar />
       <main className="m-2 w-full">
-        <div className="flex items-center gap-2 rounded-md border border-sidebar-border bg-border p-2 px-4 shadow">
+        <div className="flex items-center gap-2 rounded-md border border-sidebar-border bg-sidebar p-2 px-4">
           {/* search bar */}
           {session && (
             <>

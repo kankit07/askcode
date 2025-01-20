@@ -42,7 +42,7 @@ export async function askQuestion(question: string, projectId: string) {
         "summary",
         1-("summaryEmbedding" <=> ${vectorQuery}::vector) AS similarity
       FROM "SourceCodeEmbedding"
-      WHERE 1-("summaryEmbedding" <=> ${vectorQuery}::vector) > 0.4
+      WHERE 1-("summaryEmbedding" <=> ${vectorQuery}::vector) > 0.2
         AND "projectId" = ${projectId}
       ORDER BY similarity DESC
       LIMIT 10
@@ -124,7 +124,7 @@ export async function askQuestion(question: string, projectId: string) {
       const { textStream } = await streamText({
         model: google("gemini-1.5-flash"),
         prompt: prompt,
-        temperature: 0.7, // Added for more focused responses
+        // temperature: 0.7, // Added for more focused responses
         // maxTokens: 1500, // Increased for detailed explanations
       });
 
