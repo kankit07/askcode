@@ -15,6 +15,8 @@ import Image from "next/image";
 import { askQuestion } from "./actions";
 import { readStreamableValue } from "ai/rsc";
 import CodeReferences from "./code-references";
+import { api } from "@/trpc/react";
+import { toast } from "sonner";
 
 const AskQuestionCard = () => {
   const { project } = useProject();
@@ -29,6 +31,7 @@ const AskQuestionCard = () => {
     }[]
   >([]);
   const [answer, setAnswer] = useState("");
+  const saveAnswer = api.project.saveAnswer.useMutation();
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     setAnswer("");
     setFileReferences([]);
@@ -54,10 +57,36 @@ const AskQuestionCard = () => {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-[80vw]">
           <DialogHeader>
-            <DialogTitle>
-              <Image src="" width={24} height={24} alt="logo" />
-              {question}
-            </DialogTitle>
+            <div className="flex items-center gap-2">
+              <DialogTitle>
+                <Image src="" width={24} height={24} alt="logo" />
+              </DialogTitle>
+              <Button
+                disabled={saveAnswer.isPending}
+                variant={"outline"}
+                onClick={() => {
+                  saveAnswer.mutate(
+                    {
+                      projectId: project.id,
+                      question,
+                      answer,
+                      fileReferences,
+                    },
+                    {
+                      onSuccess: () => {
+                        toast.success("Answer saved");
+                      },
+                      onError: () => {
+                        toast.error("Error saving answer");
+                      },
+                    },
+                  );
+                }}
+              >
+                Save Answer
+              </Button>
+            </div>
+            <div className="text-lg font-semibold">{question}</div>
           </DialogHeader>
           <div
             data-color-mode="light"
