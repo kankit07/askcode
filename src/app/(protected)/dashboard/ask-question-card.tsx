@@ -1,5 +1,6 @@
 "use client";
-import React, { useState } from "react";
+import MDEditor from "@uiw/react-md-editor";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,6 +14,7 @@ import {
 import Image from "next/image";
 import { askQuestion } from "./actions";
 import { readStreamableValue } from "ai/rsc";
+import CodeReferences from "./code-references";
 
 const AskQuestionCard = () => {
   const { project } = useProject();
@@ -28,16 +30,18 @@ const AskQuestionCard = () => {
   >([]);
   const [answer, setAnswer] = useState("");
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    setAnswer("");
+    setFileReferences([]);
     e.preventDefault();
     if (!project?.id) return;
     setLoading(true);
-    setOpen(true);
     const { output, filesReferences } = await askQuestion(question, project.id);
+    setOpen(true);
     setFileReferences(filesReferences);
 
     // console.log("submitting question", question);
     //
-    console.log("askquestion---------");
+    // console.log("askquestion---------");
     for await (const delta of readStreamableValue(output)) {
       if (delta) {
         setAnswer((prev) => prev + delta);
@@ -48,26 +52,32 @@ const AskQuestionCard = () => {
   return (
     <>
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[80vw]">
           <DialogHeader>
             <DialogTitle>
               <Image src="" width={24} height={24} alt="logo" />
               {question}
             </DialogTitle>
           </DialogHeader>
-          {loading ? (
-            "loading..."
-          ) : (
-            <>
-              {answer}
-              <h1>File References</h1>
-              {fileReferences.map((file) => (
-                <div key={file.fileName}>
-                  <h2>{file.fileName}</h2>
-                </div>
-              ))}
-            </>
-          )}
+          <div
+            data-color-mode="light"
+            className="rounded-md border border-gray-200"
+          >
+            <MDEditor.Markdown
+              source={answer}
+              className="!h-full max-h-[40ch] overflow-scroll p-4"
+            />
+          </div>
+          <div className="h-4" />
+          <CodeReferences fileReferences={fileReferences} />
+          <Button
+            type="button"
+            onClick={() => {
+              setOpen(false);
+            }}
+          >
+            close
+          </Button>
         </DialogContent>
       </Dialog>
       <Card className="relative col-span-3">
@@ -82,7 +92,9 @@ const AskQuestionCard = () => {
               onChange={(e) => setQuestion(e.target.value)}
             />
             <div className="h-4" />
-            <Button type="submit">Ask me!</Button>
+            <Button type="submit" disabled={loading}>
+              Ask me!
+            </Button>
           </form>
         </CardContent>
       </Card>
