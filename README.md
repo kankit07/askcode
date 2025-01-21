@@ -21,7 +21,6 @@ AskCode is an AI-powered platform that helps developers understand codebases thr
   - Google Gemini AI
   - Llama AI
 - **UI Components:**
-  - [Radix UI](https://www.radix-ui.com/)
   - [shadcn/ui](https://ui.shadcn.com/)
   - [Tailwind CSS](https://tailwindcss.com/)
 - **Type Safety:** [TypeScript](https://www.typescriptlang.org/)
