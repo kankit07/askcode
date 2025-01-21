@@ -1,29 +1,121 @@
-# Create T3 App
+# AskCode
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+AskCode is an AI-powered platform that helps developers understand codebases through intelligent code analysis and Q&A. It integrates with GitHub repositories to provide contextual insights and explanations.
 
-## What's next? How do I make an app with this?
+## Features
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+- 🤖 AI-powered code analysis and explanation
+- 📚 GitHub repository integration
+- 💬 Natural language Q&A about your codebase
+- 📝 Commit history analysis and summaries
+- 🔍 Advanced code search with semantic understanding
+- 👥 Project collaboration support
+- 💾 Save and reference previous questions/answers
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+## Tech Stack
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Drizzle](https://orm.drizzle.team)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+- **Framework:** [Next.js 14](https://nextjs.org/) with App Router
+- **Authentication:** [NextAuth.js](https://next-auth.js.org/)
+- **Database:** PostgreSQL with [Prisma](https://www.prisma.io/)
+- **AI Integration:**
+  - Google Gemini AI
+  - Llama AI
+- **UI Components:**
+  - [Radix UI](https://www.radix-ui.com/)
+  - [shadcn/ui](https://ui.shadcn.com/)
+  - [Tailwind CSS](https://tailwindcss.com/)
+- **Type Safety:** [TypeScript](https://www.typescriptlang.org/)
+- **API Layer:** [tRPC](https://trpc.io/)
 
-## Learn More
+## Getting Started
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+### Prerequisites
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+- Node.js 18+
+- PostgreSQL
+- GitHub Account
+- AI API Keys (Gemini/Llama)
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
+### Installation
 
-## How do I deploy this?
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/askcode.git
+cd askcode
+```
 
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+2. Install dependencies:
+```bash
+npm install
+# or
+pnpm install
+```
+
+3. Set up environment variables:
+```bash
+cp .env.example .env
+```
+
+Fill in your environment variables:
+```env
+DATABASE_URL=
+AUTH_SECRET=
+AUTH_GOOGLE_ID=
+AUTH_GOOGLE_SECRET=
+GEMINI_API_KEY=
+LLAMA_API_KEY=
+GITHUB_TOKEN=
+```
+
+4. Run database migrations:
+```bash
+npx prisma migrate dev
+```
+
+5. Start the development server:
+```bash
+npm run dev
+# or
+pnpm dev
+```
+
+## Project Structure
+
+```
+src/
+├── app/                 # Next.js app router pages
+├── components/         # Reusable UI components
+├── server/            # Backend server code
+│   ├── api/          # tRPC API routes
+│   ├── auth/         # Authentication setup
+│   └── db/           # Database configuration
+├── lib/              # Utility functions and shared logic
+├── styles/           # Global styles
+└── types/            # TypeScript type definitions
+```
+
+## Features in Detail
+
+### GitHub Integration
+- Connect any GitHub repository
+- Automatic code analysis
+- Commit history tracking
+- File structure understanding
+
+### AI-Powered Q&A
+- Ask questions about your codebase in natural language
+- Get contextual answers with code references
+- Save important Q&A for future reference
+
+### Project Management
+- Create multiple projects
+- Collaborate with team members
+- Track project activity
+
+## Contributing
+
+- Contributions are welcome! Feel free to open an issue or submit a pull request.
+
+## Acknowledgments
+
+- Thanks to all contributors who have helped shape AskCode
