@@ -8,8 +8,9 @@ import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
   title: "Askcode",
-  description: "Askcode is a platform for developers to ask questions",
-  icons: [{ rel: "icon", url: "/favicon.ico" }],
+  description:
+    "Askcode is a platform for developers to ask questions about your Repository!",
+  icons: [{ rel: "icon", url: "/Robot conversation.png" }],
 };
 
 export default function RootLayout({

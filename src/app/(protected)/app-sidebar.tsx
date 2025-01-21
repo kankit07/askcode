@@ -57,13 +57,18 @@ export function AppSidebar() {
     <Sidebar collapsible="icon" variant="floating">
       <SidebarHeader>
         <div className="flex items-center gap-2">
-          <Image src="/logo.png" alt="logo" width={32} height={32} />
+          <Image
+            src="/Robot conversation.png"
+            alt="logo"
+            width={32}
+            height={32}
+          />
           {open && (
             <h1 className="text-xl font-bold text-primary/80">AskCode</h1>
           )}
         </div>
+        <div className="border-b border-border" />
       </SidebarHeader>
-
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Application</SidebarGroupLabel>
@@ -71,7 +76,7 @@ export function AppSidebar() {
             <SidebarMenu>
               {items.map((item) => {
                 return (
-                  <SidebarMenuItem key={item.title}>
+                  <SidebarMenuItem key={item.title + 1}>
                     <SidebarMenuButton asChild>
                       <Link
                         href={item.url}
@@ -89,13 +94,15 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
         <SidebarGroup>
+          <div className="border-b border-border" />
           <SidebarGroupLabel>Your Projects</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {projects?.map((project) => {
                 return (
-                  <SidebarMenuItem key={project.name}>
+                  <SidebarMenuItem key={project.id}>
                     <SidebarMenuButton asChild>
                       <div
                         onClick={() => {

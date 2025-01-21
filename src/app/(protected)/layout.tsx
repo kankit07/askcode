@@ -30,7 +30,7 @@ const SidebarLayout = async ({ children }: Props) => {
           )}
         </div>
         {/* main content */}
-        <div className="mt-4 h-[calc(100vh-6rem)] overflow-y-scroll rounded-md border border-sidebar-border bg-sidebar p-4 shadow">
+        <div className="mt-4 h-[calc(100vh-5.2rem)] overflow-y-scroll rounded-md border border-sidebar-border bg-sidebar p-4 shadow">
           {children}
         </div>
       </main>
