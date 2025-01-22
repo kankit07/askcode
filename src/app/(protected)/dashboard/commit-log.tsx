@@ -4,11 +4,21 @@ import useProject from "@/hooks/use-project";
 import { cn } from "@/lib/utils";
 import { api } from "@/trpc/react";
 import { ExternalLink } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
-
-const commitLog = () => {
+type Commit = {
+  id: string;
+  commitHash: string;
+  commitAuthorName: string;
+  commitAuthorAvatar: string;
+  commitMessage: string;
+  summary: string;
+};
+const CommitLog = () => {
   const { projectId, project } = useProject();
-  const { data: commits } = api.project.getCommits.useQuery({ projectId });
+  const { data: commits } = api.project.getCommits.useQuery({ projectId }) as {
+    data: Commit[];
+  };
   return (
     <>
       <ul className="space-y-6">
@@ -24,11 +34,15 @@ const commitLog = () => {
                 <div className="w-px translate-x-1 bg-gray-200" />
               </div>
               <>
-                <img
-                  src={commit.commitAuthorAvatar || "/default-avatar.png"}
-                  alt="commit avatar"
-                  className="relative mt-4 size-8 flex-none rounded-full bg-gray-50"
-                />
+                <div className="relative mt-4 size-8 flex-none bg-gray-50">
+                  <Image
+                    src={commit.commitAuthorAvatar}
+                    alt="commit avatar"
+                    width={32}
+                    height={32}
+                    className="rounded-full"
+                  />
+                </div>
                 <div className="rounded-mg flex-auto bg-white p-3 ring-1 ring-inset ring-gray-200">
                   <div className="flex justify-between gap-x-4">
                     <Link
@@ -58,4 +72,4 @@ const commitLog = () => {
     </>
   );
 };
-export default commitLog;
+export default CommitLog;

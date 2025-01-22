@@ -7,6 +7,7 @@ import { api } from "@/trpc/react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import Image from "next/image";
 
 type FormInput = {
   repoUrl: string;
@@ -40,9 +41,9 @@ const CreatePage = () => {
         githubToken: data.githubToken,
       },
       {
-        onSuccess: () => {
+        onSuccess: async () => {
           toast.success("Project created successfully");
-          refetch();
+          await refetch();
           reset();
         },
         onError: () => {
@@ -56,10 +57,11 @@ const CreatePage = () => {
     <>
       {createProject.isPending && <LoadingOverlay />}
       <div className="flex h-full items-center justify-center gap-12">
-        <img
+        <Image
           alt="undrrea"
           src="/AI Friends Icon (1).png"
-          className="h-60 w-auto"
+          width={240}
+          height={240}
         />
         <div>
           <div>

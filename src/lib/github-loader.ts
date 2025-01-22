@@ -35,8 +35,8 @@ const generateEmbeddings = async (docs: Document[]) => {
         return {
           summary,
           embedding,
-          sourceCode: JSON.parse(JSON.stringify(doc.pageContent)),
-          fileName: doc.metadata.source,
+          sourceCode: doc.pageContent,
+          fileName: doc.metadata.source as string,
         };
       } catch (error) {
         console.log("error in generateEmbeddings", error);
@@ -56,7 +56,7 @@ export const indexGithubRepo = async (
   const allEmbeddings = await generateEmbeddings(docs);
   // console.log("linr-47,github-loader");
   await Promise.allSettled(
-    allEmbeddings.map(async (embedding, index) => {
+    allEmbeddings.map(async (embedding) => {
       // console.log(`processing ${index} of ${allEmbeddings.length}`);
       if (!embedding) return;
 

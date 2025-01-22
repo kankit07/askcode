@@ -15,6 +15,11 @@ import MDEditor from "@uiw/react-md-editor";
 import CodeReferences from "../dashboard/code-references";
 import Image from "next/image";
 
+type FileReference = {
+  fileName: string;
+  sourceCode: string;
+  summary: string;
+};
 const QAPage = () => {
   const { projectId } = useProject();
   const { data: questions } = api.project.getQuestions.useQuery({ projectId });
@@ -76,8 +81,13 @@ const QAPage = () => {
               <MDEditor.Markdown source={question.answer} className="p-4" />
             </div>
             {/* <MDEditor.Markdown source={question.answer} className="p-4" /> */}
+            {/* <CodeReferences fileReferences={question.fileReferences ?? []} /> */}
             <CodeReferences
-              fileReferences={(question.fileReferences ?? []) as any}
+              fileReferences={
+                (Array.isArray(question.fileReferences)
+                  ? question.fileReferences
+                  : []) as FileReference[]
+              }
             />
           </SheetHeader>
         </SheetContent>

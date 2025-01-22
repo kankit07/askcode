@@ -61,7 +61,12 @@ const AskQuestionCard = () => {
           <DialogHeader>
             <div className="flex items-center gap-2">
               <DialogTitle>
-                <Image src="" width={24} height={24} alt="logo" />
+                <Image
+                  src="/Robot conversation.png"
+                  width={36}
+                  height={36}
+                  alt="logo"
+                />
               </DialogTitle>
               <Button
                 disabled={saveAnswer.isPending}
@@ -75,9 +80,9 @@ const AskQuestionCard = () => {
                       fileReferences,
                     },
                     {
-                      onSuccess: () => {
+                      onSuccess: async () => {
                         toast.success("Answer saved");
-                        refetch();
+                        await refetch();
                       },
                       onError: () => {
                         toast.error("Error saving answer");

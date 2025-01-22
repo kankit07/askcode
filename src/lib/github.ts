@@ -31,16 +31,16 @@ export const getCommitHashes = async (
       repo,
     });
     const sortedCommits = data.sort(
-      (a: any, b: any) =>
-        new Date(b.commit.author.date).getTime() -
-        new Date(a.commit.author.date).getTime(),
-    ) as any[];
-    return sortedCommits.slice(0, 15).map((commit: any) => ({
+      (a, b) =>
+        new Date(b!.commit!.author!.date!).getTime() -
+        new Date(a!.commit!.author!.date!).getTime(),
+    );
+    return sortedCommits.slice(0, 15).map((commit) => ({
       commitHash: commit.sha as string,
       commitMessage: commit.commit.message ?? "",
       commitAuthorName: commit.commit?.author?.name ?? "",
       commitAuthorAvatar: commit.author?.avatar_url ?? "",
-      commitDate: commit.commit.author.date ?? "",
+      commitDate: commit.commit.author?.date ?? "",
     }));
   } catch (error) {
     console.error("Error fetching commit hashes:", error);
@@ -49,7 +49,7 @@ export const getCommitHashes = async (
 };
 // console.log(await getCommitHashes(githubUrl));
 export const pollCommits = async (projectId: string) => {
-  const { project, githubUrl } = await fetchProjectGithubUrl(projectId);
+  const { githubUrl } = await fetchProjectGithubUrl(projectId);
   const commitHashes = await getCommitHashes(githubUrl);
   const unprocessedCommits = await filterUnprocessedCommits(
     projectId,
@@ -86,12 +86,12 @@ export const pollCommits = async (projectId: string) => {
 
 async function summarizeCommits(githubUrl: string, commitHash: string) {
   // get the diff then pass the diff to ai
-  const { data } = await axios.get(`${githubUrl}/commit/${commitHash}.diff`, {
+  const { data } = (await axios.get(`${githubUrl}/commit/${commitHash}.diff`, {
     headers: {
       Accept: "application/vnd.gitub.v3.diff",
       // Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
     },
-  });
+  })) as { data: string };
   return summarizeCommit(data) || "No summary available";
 }
 // async function summarizeCommits(githubUrl: string, commitHash: string) {

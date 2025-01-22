@@ -1,6 +1,5 @@
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { auth } from "@/server/auth";
-import Image from "next/image";
 import { AppSidebar } from "./app-sidebar";
 import { ProjectHeader } from "../_components/project-header";
 

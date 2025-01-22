@@ -14,7 +14,7 @@ export const ProjectHeader = ({ userImage }: ProjectHeaderProps) => {
     <div className="flex items-center gap-2 rounded-md border border-sidebar-border bg-sidebar p-2 px-4">
       {/* Display project name */}
       <div className="text-md font-semibold">
-        {project?.name || "Select a project"}
+        {project?.name ?? "Select a project"}
       </div>
 
       <div className="ml-auto" />

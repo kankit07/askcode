@@ -95,8 +95,8 @@ export async function askQuestion(question: string, projectId: string) {
   //   }
   //   stream.done();
   // })();
-  (async () => {
-    const prompt = `You are an expert code assistant who helps developers understand codebases.
+  // await (async () => {
+  const prompt = `You are an expert code assistant who helps developers understand codebases.
 
   ## Response Guidelines
   - Always provide detailed, clear explanations
@@ -120,28 +120,28 @@ export async function askQuestion(question: string, projectId: string) {
   - Focus on explaining "how" and "why" aspects of the code
   - Include examples when relevant to clarify concepts`;
 
-    try {
-      const { textStream } = await streamText({
-        model: google("gemini-1.5-flash"),
-        prompt: prompt,
-        // temperature: 0.7, // Added for more focused responses
-        // maxTokens: 1500, // Increased for detailed explanations
-      });
+  try {
+    const { textStream } = streamText({
+      model: google("gemini-1.5-flash"),
+      prompt: prompt,
+      // temperature: 0.7, // Added for more focused responses
+      // maxTokens: 1500, // Increased for detailed explanations
+    });
 
-      for await (const text of textStream) {
-        try {
-          stream.update(text);
-        } catch (streamError) {
-          console.error("Error updating stream:", streamError);
-        }
+    for await (const text of textStream) {
+      try {
+        stream.update(text);
+      } catch (streamError) {
+        console.error("Error updating stream:", streamError);
       }
-
-      stream.done();
-    } catch (error) {
-      console.error("Stream processing error:", error);
-      stream.done();
     }
-  })();
+
+    stream.done();
+  } catch (error) {
+    console.error("Stream processing error:", error);
+    stream.done();
+  }
+  // })();
   return {
     output: stream.value,
     filesReferences: result,

@@ -13,7 +13,7 @@ export const projectRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      if (!ctx.session || !ctx.session.user.id) {
+      if (!ctx.session?.user?.id) {
         throw new Error("User not authenticated");
       }
       const project = await ctx.db.project.create({
@@ -62,11 +62,18 @@ export const projectRouter = createTRPCRouter({
         projectId: z.string(),
         question: z.string(),
         answer: z.string(),
-        fileReferences: z.any(),
+        // fileReferences: z.any(),
+        fileReferences: z.array(
+          z.object({
+            fileName: z.string(),
+            sourceCode: z.string(),
+            summary: z.string(),
+          }),
+        ),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      if (!ctx.session || !ctx.session.user.id) {
+      if (!ctx.session?.user?.id) {
         throw new Error("User not authenticated");
       }
       return await ctx.db.question.create({

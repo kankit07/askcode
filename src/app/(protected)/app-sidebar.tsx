@@ -17,8 +17,8 @@ import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
   Bot,
-  Presentation,
-  CreditCard,
+  // Presentation,
+  // CreditCard,
   Plus,
 } from "lucide-react";
 import Image from "next/image";
