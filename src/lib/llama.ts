@@ -1,9 +1,12 @@
 import * as dotenv from "dotenv";
 dotenv.config();
 import OpenAI from "openai";
-import { Document } from "@langchain/core/documents";
+import type { Document } from "@langchain/core/documents";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
+if (!process.env.GEMINI_API_KEY) {
+  throw new Error("GEMINI_API_KEY is not defined in environment variables");
+}
 const genAi = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const openai = new OpenAI({
   apiKey: process.env.LLAMA_API_KEY,
@@ -57,8 +60,11 @@ export const summarizeCommit = async (diff: string) => {
 };
 
 export async function summarizeCode(doc: Document[]) {
-  console.log("getting summary for", doc.metadata.source);
-  const code = doc.pageContent.slice(0, 10000); // limit to 10k characters
+  // console.log("getting summary for", doc.metadata.source);
+  if (!doc.length) {
+    throw new Error("No documents provided");
+  }
+  const code = doc[0]?.pageContent.slice(0, 10000); // limit to 10k characters
 
   const response = await openai.chat.completions.create({
     model: "llama-3.3-70b-versatile",
@@ -66,7 +72,7 @@ export async function summarizeCode(doc: Document[]) {
       {
         role: "system",
         content: `You are an intelligient senior software engineer who specialises in onboarding junior software engineers onto projects.
-        You are onboarding a junior software engineer and explaining to them the purpose of the ${doc.metadata.source} file.`,
+        You are onboarding a junior software engineer and explaining to them the purpose of the ${doc[0]?.metadata.source} file.`,
       },
       {
         role: "user",
@@ -89,7 +95,7 @@ export async function summarizeCode(doc: Document[]) {
 //   return response.data[0]?.embedding;
 // }
 export async function generateEmbedding(summary: string) {
-  console.log("generating embedding for summary");
+  // console.log("generating embedding for summary");
   const model = genAi.getGenerativeModel({
     model: "text-embedding-004",
   });

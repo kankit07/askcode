@@ -18,8 +18,8 @@ import Image from "next/image";
 const QAPage = () => {
   const { projectId } = useProject();
   const { data: questions } = api.project.getQuestions.useQuery({ projectId });
-  const [questionIndex, setQuestionIndex] = useState();
-  const question = questions?.[questionIndex];
+  const [questionIndex, setQuestionIndex] = useState<number>(0);
+  const question = questions ? questions[questionIndex] : undefined;
   return (
     <Sheet>
       <AskQuestionCard />
@@ -40,7 +40,7 @@ const QAPage = () => {
                     alt="user-image"
                   /> */}
                   <Image
-                    src={question.user.image}
+                    src={question?.user?.image ?? "/default-avatar.png"}
                     height={32}
                     width={32}
                     alt="user-image"

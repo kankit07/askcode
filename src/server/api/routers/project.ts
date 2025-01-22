@@ -13,13 +13,16 @@ export const projectRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      if (!ctx.session || !ctx.session.user.id) {
+        throw new Error("User not authenticated");
+      }
       const project = await ctx.db.project.create({
         data: {
           name: input.name,
           githubUrl: input.githubUrl,
           UserToProject: {
             create: {
-              userId: ctx.session.userId!,
+              userId: ctx.session.user.id,
             },
           },
         },
@@ -34,7 +37,7 @@ export const projectRouter = createTRPCRouter({
       where: {
         UserToProject: {
           some: {
-            userId: ctx.session.userId!,
+            userId: ctx.session?.user.id,
           },
         },
         deletedAt: null,
@@ -63,6 +66,9 @@ export const projectRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      if (!ctx.session || !ctx.session.user.id) {
+        throw new Error("User not authenticated");
+      }
       return await ctx.db.question.create({
         data: {
           answer: input.answer,

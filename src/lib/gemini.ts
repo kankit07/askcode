@@ -1,8 +1,11 @@
 import * as dotenv from "dotenv";
 dotenv.config();
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { Document } from "@langchain/core/documents";
+import type { Document } from "@langchain/core/documents";
 
+if (!process.env.GEMINI_API_KEY) {
+  throw new Error("GEMINI_API_KEY is not defined in environment variables");
+}
 const genAi = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 //fix the env in
 const model = genAi.getGenerativeModel({
@@ -46,12 +49,16 @@ export const summarizeCommit = async (diff: string) => {
   return response.response.text();
 };
 
-export async function summarizeCode(doc: Document[]) {
-  console.log("getting summary for", doc.metadata.source);
-  const code = doc.pageContent.slice(0, 10000); // limit to 10k characters
+export async function summarizeCode(docs: Document[]) {
+  // console.log("getting summary for", doc.metadata.source);
+  if (!docs.length) {
+    throw new Error("No documents provided");
+  }
+  // console.log("getting summary for", doc?.metadata?.source);
+  const code = docs[0]?.pageContent?.slice(0, 10000); // limit to 10k characters
   const response = await model.generateContent([
     `You are an intelligient senior software engineer who specialises in onboarding junior software engineers onto projects.
-    You are onboarding a junior software engineer and explaining to them the purpose of the ${doc.metadata.source} file.
+    You are onboarding a junior software engineer and explaining to them the purpose of the ${docs[0]?.metadata.source} file.
     Here is the code:
     ---
     ${code}

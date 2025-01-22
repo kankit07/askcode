@@ -69,14 +69,14 @@ export const pollCommits = async (projectId: string) => {
 
   const commits = await db.commit.createMany({
     data: summaries.map((summary, index) => {
-      console.log(`processing commit ${index}`);
+      // console.log(`processing commit ${index}`);
       return {
         projectId,
-        commitHash: unprocessedCommits[index]?.commitHash,
-        commitMessage: unprocessedCommits[index]?.commitMessage,
-        commitAuthorName: unprocessedCommits[index]?.commitAuthorName,
-        commitDate: unprocessedCommits[index]?.commitDate,
-        commitAuthorAvatar: unprocessedCommits[index]?.commitAuthorAvatar,
+        commitHash: unprocessedCommits[index]?.commitHash ?? "",
+        commitMessage: unprocessedCommits[index]?.commitMessage ?? "",
+        commitAuthorName: unprocessedCommits[index]?.commitAuthorName ?? "",
+        commitDate: unprocessedCommits[index]?.commitDate ?? "",
+        commitAuthorAvatar: unprocessedCommits[index]?.commitAuthorAvatar ?? "",
         summary,
       };
     }),
