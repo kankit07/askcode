@@ -14,12 +14,11 @@ AskCode is an AI-powered platform that helps developers understand codebases thr
 
 ## Tech Stack
 
-- **Framework:** [Next.js 14](https://nextjs.org/) with App Router
+- **Framework:** [Next.js 15](https://nextjs.org/) with App Router
 - **Authentication:** [NextAuth.js](https://next-auth.js.org/)
 - **Database:** PostgreSQL with [Prisma](https://www.prisma.io/)
-- **AI Integration:**
-  - Google Gemini AI
-  - Llama AI
+- **AI:** Google Gemini via the [AI SDK](https://ai-sdk.dev/). Answers use `gemini-3-flash-preview`, file and commit summaries use lite models, and embeddings use `gemini-embedding-001`. Each list falls back to the next model when one is busy or out of quota (see `src/lib/ai.ts`; override with `GEMINI_MODELS` / `GEMINI_SUMMARY_MODELS`).
+- **Vector search:** PostgreSQL + [pgvector](https://github.com/pgvector/pgvector)
 - **UI Components:**
   - [shadcn/ui](https://ui.shadcn.com/)
   - [Tailwind CSS](https://tailwindcss.com/)
@@ -31,9 +30,9 @@ AskCode is an AI-powered platform that helps developers understand codebases thr
 ### Prerequisites
 
 - Node.js 18+
-- PostgreSQL
+- PostgreSQL with the `pgvector` extension
 - GitHub Account
-- AI API Keys (Gemini/Llama)
+- A Gemini API key
 
 ### Installation
 
@@ -62,13 +61,12 @@ AUTH_SECRET=
 AUTH_GOOGLE_ID=
 AUTH_GOOGLE_SECRET=
 GEMINI_API_KEY=
-LLAMA_API_KEY=
-GITHUB_TOKEN=
+GITHUB_TOKEN=   # optional, raises GitHub rate limits
 ```
 
-4. Run database migrations:
+4. Sync the database schema:
 ```bash
-npx prisma migrate dev
+npm run db:push
 ```
 
 5. Start the development server:
@@ -78,38 +76,42 @@ npm run dev
 pnpm dev
 ```
 
+## How it works
+
+1. **Create a project.** The repository URL is checked against GitHub, the
+   project is saved with status `INDEXING`, and the request returns right away.
+2. **Indexing runs in the background** (`src/lib/indexer.ts`, started with
+   Next.js `after()`). Each file on the default branch is summarized by Gemini,
+   the summary is embedded, and the vector is stored in `SourceCodeEmbedding`.
+   Progress is written to the project row, and the dashboard polls it.
+3. **Ask a question** (`src/server/actions/ask-question.ts`). The question is
+   embedded, the closest file summaries are found with pgvector, and Gemini
+   streams an answer grounded in those files. The files are shown as sources.
+4. **Commits.** The latest 15 commits are summarized from their diffs. Refreshing
+   only summarizes commits that haven't been seen yet.
+
+Every project-scoped query and action checks that the signed-in user is a
+member of the project.
+
 ## Project Structure
 
 ```
 src/
-├── app/                 # Next.js app router pages
-├── components/         # Reusable UI components
-├── server/            # Backend server code
-│   ├── api/          # tRPC API routes
-│   ├── auth/         # Authentication setup
-│   └── db/           # Database configuration
-├── lib/              # Utility functions and shared logic
-├── styles/           # Global styles
-└── types/            # TypeScript type definitions
+├── app/
+│   ├── page.tsx              # Landing page (redirects to /dashboard when signed in)
+│   └── (protected)/          # Signed-in app: dashboard, qa, create
+├── components/               # App components (ask card, answer dialog, sources…)
+│   └── ui/                   # shadcn/ui primitives
+├── hooks/use-project.tsx     # Selected project (localStorage) + project list
+├── lib/
+│   ├── ai.ts                 # Gemini models, prompts, embeddings
+│   ├── github.ts             # GitHub URL parsing, commits, diffs
+│   └── indexer.ts            # Background repository indexing
+└── server/
+    ├── actions/              # Server actions (streaming Q&A)
+    ├── api/routers/          # tRPC routers
+    └── project-access.ts     # Membership check used everywhere
 ```
-
-## Features in Detail
-
-### GitHub Integration
-- Connect any GitHub repository
-- Automatic code analysis
-- Commit history tracking
-- File structure understanding
-
-### AI-Powered Q&A
-- Ask questions about your codebase in natural language
-- Get contextual answers with code references
-- Save important Q&A for future reference
-
-### Project Management
-- Create multiple projects
-- Collaborate with team members
-- Track project activity
 
 ## Contributing
 

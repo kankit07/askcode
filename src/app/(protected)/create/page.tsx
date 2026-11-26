@@ -1,107 +1,191 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import useRefetch from "@/hooks/use-refetch";
-import { api } from "@/trpc/react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { ChevronDown, Github, Loader2 } from "lucide-react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
-import Image from "next/image";
+import { z } from "zod";
 
-type FormInput = {
-  repoUrl: string;
-  projectName: string;
-  githubToken?: string;
-};
-const LoadingOverlay = () => {
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import useProject from "@/hooks/use-project";
+import { api } from "@/trpc/react";
+
+const GITHUB_REPO = /^https?:\/\/(www\.)?github\.com\/[^/\s]+\/[^/\s]+/i;
+
+const formSchema = z.object({
+  githubUrl: z
+    .string()
+    .trim()
+    .regex(GITHUB_REPO, "Enter a URL like https://github.com/owner/repo"),
+  name: z.string().trim().min(1, "Give your project a name").max(80),
+  githubToken: z.string().trim().optional(),
+});
+type FormValues = z.infer<typeof formSchema>;
+
+/** "https://github.com/vercel/next.js" -> "next.js" */
+function repoName(url: string) {
+  return GITHUB_REPO.test(url)
+    ? url
+        .replace(/\/+$/, "")
+        .split("/")[4]
+        ?.replace(/\.git$/, "")
+    : undefined;
+}
+
+export default function CreatePage() {
+  const router = useRouter();
+  const utils = api.useUtils();
+  const { setProjectId } = useProject();
+  const [showToken, setShowToken] = useState(false);
+
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: { githubUrl: "", name: "", githubToken: "" },
+  });
+  const { errors } = form.formState;
+
+  const createProject = api.project.createProject.useMutation({
+    onSuccess: async (project) => {
+      setProjectId(project.id);
+      await utils.project.getProjects.invalidate();
+      toast.success(`Indexing ${project.name}…`, {
+        description: "You can start asking questions when it finishes.",
+      });
+      router.push("/dashboard");
+    },
+    onError: (error) => {
+      const fieldErrors = error.data?.zodError?.fieldErrors;
+      if (fieldErrors?.githubUrl?.[0]) {
+        form.setError("githubUrl", { message: fieldErrors.githubUrl[0] });
+      } else {
+        toast.error(error.message);
+      }
+    },
+  });
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-      <div className="flex flex-col items-center gap-2">
-        <Loader2 className="h-12 w-12 animate-spin text-primary" />
-        <h3 className="text-lg font-semibold">Creating Project...</h3>
-        <p className="text-sm text-muted-foreground">
-          Please wait while we set up your project
-        </p>
-      </div>
+    <div className="mx-auto flex max-w-4xl flex-col items-center gap-10 py-6 md:flex-row md:py-12">
+      <Image
+        src="/illustration.png"
+        alt=""
+        width={220}
+        height={220}
+        className="hidden md:block"
+      />
+      <Card className="w-full max-w-md">
+        <form
+          onSubmit={form.handleSubmit((values) => createProject.mutate(values))}
+        >
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Github className="size-5" />
+              Connect a repository
+            </CardTitle>
+            <CardDescription>
+              AskCode reads the files on the default branch and summarizes
+              recent commits.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="githubUrl">Repository URL</Label>
+              <Input
+                id="githubUrl"
+                placeholder="https://github.com/owner/repo"
+                autoFocus
+                autoComplete="off"
+                aria-invalid={!!errors.githubUrl}
+                {...form.register("githubUrl", {
+                  onBlur: (event: React.FocusEvent<HTMLInputElement>) => {
+                    // Suggest a project name from the repo if none was typed.
+                    const suggestion = repoName(event.target.value);
+                    if (suggestion && !form.getValues("name")) {
+                      form.setValue("name", suggestion, {
+                        shouldValidate: true,
+                      });
+                    }
+                  },
+                })}
+              />
+              {errors.githubUrl && (
+                <p className="text-sm text-destructive">
+                  {errors.githubUrl.message}
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="name">Project name</Label>
+              <Input
+                id="name"
+                placeholder="My app"
+                aria-invalid={!!errors.name}
+                {...form.register("name")}
+              />
+              {errors.name && (
+                <p className="text-sm text-destructive">
+                  {errors.name.message}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <button
+                type="button"
+                onClick={() => setShowToken((v) => !v)}
+                className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+                aria-expanded={showToken}
+              >
+                <ChevronDown
+                  className={`size-4 transition-transform ${showToken ? "" : "-rotate-90"}`}
+                />
+                Private repository?
+              </button>
+              {showToken && (
+                <div className="mt-3 space-y-2">
+                  <Label htmlFor="githubToken">GitHub access token</Label>
+                  <Input
+                    id="githubToken"
+                    type="password"
+                    placeholder="github_pat_…"
+                    autoComplete="off"
+                    {...form.register("githubToken")}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Needs read access to the repository&apos;s contents.
+                    It&apos;s used once for indexing and isn&apos;t stored.
+                  </p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+          <CardFooter>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={createProject.isPending}
+            >
+              {createProject.isPending && <Loader2 className="animate-spin" />}
+              {createProject.isPending
+                ? "Checking repository…"
+                : "Create project"}
+            </Button>
+          </CardFooter>
+        </form>
+      </Card>
     </div>
   );
-};
-const CreatePage = () => {
-  const { register, handleSubmit, reset } = useForm<FormInput>();
-  const createProject = api.project.createProject.useMutation();
-  const refetch = useRefetch();
-  function onSubmit(data: FormInput) {
-    // console.log(data)
-    // window.alert(JSON.stringify(data));
-    createProject.mutate(
-      {
-        githubUrl: data.repoUrl,
-        name: data.projectName,
-        githubToken: data.githubToken,
-      },
-      {
-        onSuccess: async () => {
-          toast.success("Project created successfully");
-          await refetch();
-          reset();
-        },
-        onError: () => {
-          toast.error("Failed to create project");
-        },
-      },
-    );
-  }
-
-  return (
-    <>
-      {createProject.isPending && <LoadingOverlay />}
-      <div className="flex h-full items-center justify-center gap-12">
-        <Image
-          alt="undrrea"
-          src="/AI Friends Icon (1).png"
-          width={240}
-          height={240}
-        />
-        <div>
-          <div>
-            <h1 className="text-2xl font-semibold">
-              {" "}
-              Link your Github Repository{" "}
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Enter the URL of your Github repository to get started with
-              Askcode
-            </p>
-          </div>
-          <div className="h-4" />
-          <div>
-            <form onSubmit={handleSubmit(onSubmit)}>
-              <Input
-                {...register("projectName", { required: true })}
-                placeholder="Projectname"
-                required
-              />
-              <div className="h-2" />
-              <Input
-                {...register("repoUrl", { required: true })}
-                placeholder="Github URL"
-                required
-              />
-              <div className="h-2" />
-              <Input
-                {...register("githubToken")}
-                placeholder="Github Token (Optional)"
-              />
-              <div className="h-4" />
-              <Button type="submit" disabled={createProject.isPending}>
-                Create Project
-              </Button>
-            </form>
-          </div>
-        </div>
-      </div>
-    </>
-  );
-};
-export default CreatePage;
+}

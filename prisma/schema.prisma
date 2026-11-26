@@ -16,18 +16,6 @@ datasource db {
   extensions = [vector]
 }
 
-model Post {
-  id        Int      @id @default(autoincrement())
-  name      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  createdBy   User   @relation(fields: [createdById], references: [id])
-  createdById String
-
-  @@index([name])
-}
-
 // Necessary for Next auth
 model Account {
   id                       String  @id @default(cuid())
@@ -64,7 +52,6 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
-  posts         Post[]
   UserToProject UserToProject[]
   Commit        Commit[]
   Question      Question[]
@@ -78,14 +65,28 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
+enum ProjectStatus {
+  INDEXING
+  READY
+  FAILED
+}
+
 model Project {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  name                String
-  githubUrl           String
-  deletedAt           DateTime?
+  name      String
+  githubUrl String
+  deletedAt DateTime?
+
+  // Indexing progress. Existing rows default to READY.
+  status          ProjectStatus @default(READY)
+  totalFiles      Int           @default(0)
+  indexedFiles    Int           @default(0)
+  indexError      String?
+  commitsSyncedAt DateTime?
+
   UserToProject       UserToProject[]
   Commit              Commit[]
   SourceCodeEmbedding SourceCodeEmbedding[]
@@ -100,8 +101,8 @@ model UserToProject {
   userId    String
   projectId String
 
-  user    User    @relation(fields: [userId], references: [id])
-  project Project @relation(fields: [projectId], references: [id])
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@unique([userId, projectId])
 }
@@ -114,7 +115,9 @@ model SourceCodeEmbedding {
   summary          String
 
   projectId String
-  project   Project @relation(fields: [projectId], references: [id])
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
 }
 
 model Question {
@@ -126,9 +129,11 @@ model Question {
   answer         String
   fileReferences Json?
   projectId      String
-  project        Project @relation(fields: [projectId], references: [id])
+  project        Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   userId         String
-  user           User    @relation(fields: [userId], references: [id])
+  user           User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, createdAt])
 }
 
 model Commit {
@@ -137,15 +142,18 @@ model Commit {
   updatedAt DateTime @updatedAt
 
   projectId String
-  project   Project @relation(fields: [projectId], references: [id])
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   User      User?   @relation(fields: [userId], references: [id])
   userId    String?
 
   commitMessage      String?
-  commitHash         String?
+  commitHash         String
   commitAuthorName   String?
   commitAuthorAvatar String?
   commitDate         DateTime
   // ai summary
   summary            String
+
+  @@unique([projectId, commitHash])
+  @@index([projectId, commitDate])
 }

@@ -1,54 +1,30 @@
 "use client";
 
+import { AskQuestionCard } from "@/components/ask-question-card";
+import { EmptyProjects } from "@/components/empty-projects";
+import { IndexingStatus } from "@/components/indexing-status";
+import { Skeleton } from "@/components/ui/skeleton";
 import useProject from "@/hooks/use-project";
-import { ExternalLink, Github } from "lucide-react";
-import CommitLog from "./commit-log";
-import AskQuestionCard from "./ask-question-card";
-import Link from "next/link";
+import { CommitLog } from "./commit-log";
 
-const DashboardPage = () => {
-  const { project } = useProject();
+export default function DashboardPage() {
+  const { project, isLoading } = useProject();
+
+  if (isLoading) {
+    return (
+      <div className="mx-auto max-w-4xl space-y-4">
+        <Skeleton className="h-48 w-full" />
+        <Skeleton className="h-32 w-full" />
+      </div>
+    );
+  }
+  if (!project) return <EmptyProjects />;
+
   return (
-    <div>
-      <div className="flex flex-wrap items-center justify-between gap-y-4">
-        {/* github link */}
-        <div className="w-fit rounded-md bg-primary px-4 py-3">
-          <div className="flex items-center">
-            <Github className="size-5 text-white" />
-            <div className="ml-2">
-              <p className="text-sm font-medium text-white">
-                This Project is linked to{" "}
-                <Link
-                  href={project?.githubUrl ?? ""}
-                  className="inline-flex items-center text-white/80 hover:underline"
-                >
-                  {project?.githubUrl}
-                  <ExternalLink className="ml-1 size-4" />
-                </Link>
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className="h-4" />
-        {/* Have to implement archive and invite features */}
-
-        {/* <div className="flex items-center gap-4">
-          teams member invite member archive button
-        </div> */}
-      </div>
-      <div className="mt-4">
-        {/* <div className="grid grid-cols-1 gap-4 sm:grid-cols-5"> */}
-        <div>
-          {/* <div className="col-span-3">Ask questions</div> */}
-          <AskQuestionCard />
-          {/* <div className="col-span-2">Mettings</div> */}
-        </div>
-      </div>
-      <div className="mt-4" />
-      <div className="">
-        <CommitLog />
-      </div>
+    <div className="mx-auto max-w-4xl space-y-6">
+      {project.status !== "READY" && <IndexingStatus project={project} />}
+      <AskQuestionCard />
+      <CommitLog project={project} />
     </div>
   );
-};
-export default DashboardPage;
+}

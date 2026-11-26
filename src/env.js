@@ -11,11 +11,15 @@ export const env = createEnv({
       process.env.NODE_ENV === "production"
         ? z.string()
         : z.string().optional(),
-    // AUTH_DISCORD_ID: z.string(),
-    // AUTH_DISCORD_SECRET: z.string(),
     AUTH_GOOGLE_ID: z.string(),
     AUTH_GOOGLE_SECRET: z.string(),
     DATABASE_URL: z.string().url(),
+    GEMINI_API_KEY: z.string(),
+    // Comma-separated model lists, tried in order. Defaults live in src/lib/ai.ts.
+    GEMINI_MODELS: z.string().optional(),
+    GEMINI_SUMMARY_MODELS: z.string().optional(),
+    // Optional: raises GitHub rate limits and lets commit sync read private repos.
+    GITHUB_TOKEN: z.string().optional(),
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
@@ -36,11 +40,13 @@ export const env = createEnv({
    */
   runtimeEnv: {
     AUTH_SECRET: process.env.AUTH_SECRET,
-    // AUTH_DISCORD_ID: process.env.AUTH_DISCORD_ID,
-    // AUTH_DISCORD_SECRET: process.env.AUTH_DISCORD_SECRET,
     AUTH_GOOGLE_ID: process.env.AUTH_GOOGLE_ID,
     AUTH_GOOGLE_SECRET: process.env.AUTH_GOOGLE_SECRET,
     DATABASE_URL: process.env.DATABASE_URL,
+    GEMINI_API_KEY: process.env.GEMINI_API_KEY,
+    GEMINI_MODELS: process.env.GEMINI_MODELS,
+    GEMINI_SUMMARY_MODELS: process.env.GEMINI_SUMMARY_MODELS,
+    GITHUB_TOKEN: process.env.GITHUB_TOKEN,
     NODE_ENV: process.env.NODE_ENV,
   },
   /**
