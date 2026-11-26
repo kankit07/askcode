@@ -1,73 +1,73 @@
-import Link from "next/link";
-
-import { auth } from "@/server/auth";
-import { api, HydrateClient } from "@/trpc/server";
-import { Button } from "@/components/ui/button";
-import { SignIn, SignOut } from "@/app/_components/auth";
+import { GitCommitHorizontal, MessageSquareCode, Search } from "lucide-react";
 import Image from "next/image";
+import { redirect } from "next/navigation";
+
+import { SignIn } from "@/app/_components/auth";
+import { auth } from "@/server/auth";
+
+const features = [
+  {
+    icon: MessageSquareCode,
+    title: "Ask in plain English",
+    body: "“Where is auth handled?” “What do I change to add a page?” Get answers grounded in your actual files.",
+  },
+  {
+    icon: Search,
+    title: "See the sources",
+    body: "Every answer links the files it used, so you can check the code yourself.",
+  },
+  {
+    icon: GitCommitHorizontal,
+    title: "Readable commit history",
+    body: "Recent commits are summarized by AI so you can catch up on what changed.",
+  },
+];
 
 export default async function Home() {
-  // const hello = await api.post.hello({ text: "from tRPC" });
   const session = await auth();
-
-  if (session?.user) {
-    void api.post.getLatest.prefetch();
-  }
+  if (session?.user) redirect("/dashboard");
 
   return (
-    <HydrateClient>
-      <main className="flex min-h-screen flex-col items-center justify-center bg-background">
-        <div className="relative flex flex-col items-center justify-center px-4">
-          <div className="relative z-10 flex flex-col items-center gap-16 rounded-lg border border-border/40 bg-card px-16 py-32 shadow-lg md:px-20 md:py-32">
-            {/* Authencated view */}
-            {session ? (
-              <div className="flex flex-col items-center gap-6">
-                <div className="flex flex-col items-center gap-3">
-                  {session.user.image && (
-                    <div className="relative">
-                      <div className="animate-tilt absolute -inset-0.5 rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-75 blur" />
-                      <Image
-                        src={session.user.image}
-                        alt="Profile"
-                        className="relative h-20 w-20 rounded-full border border-border"
-                        width={80}
-                        height={80}
-                      />
-                    </div>
-                  )}
-                  <h1 className="text-2xl font-semibold text-foreground">
-                    Welcome back, {session.user.name}!
-                  </h1>
-                  <p className="text-sm text-muted-foreground">
-                    {session.user.email}
-                  </p>
-                </div>
-                <div className="flex gap-4">
-                  <Link href="/dashboard">
-                    <Button variant="secondary" className="font-medium">
-                      Dashboard
-                    </Button>
-                  </Link>
-                  <SignOut />
-                </div>
-              </div>
-            ) : (
-              // Non-authenticated view
-              <div className="flex flex-col items-center gap-6">
-                <div className="space-y-2 text-center">
-                  <h1 className="text-3xl font-bold text-foreground">
-                    Welcome
-                  </h1>
-                  <p className="text-sm text-muted-foreground">
-                    Sign in to get started
-                  </p>
-                </div>
-                <SignIn />
-              </div>
-            )}
-          </div>
+    <main className="flex min-h-screen flex-col bg-gradient-to-b from-indigo-50 via-background to-background">
+      <header className="mx-auto flex w-full max-w-5xl items-center gap-2 px-6 py-5">
+        <Image src="/logo.png" alt="" width={28} height={28} />
+        <span className="text-lg font-semibold">AskCode</span>
+      </header>
+
+      <section className="mx-auto flex w-full max-w-5xl flex-1 flex-col items-center gap-8 px-6 pb-16 pt-12 text-center md:pt-20">
+        <Image
+          src="/illustration.png"
+          alt=""
+          width={160}
+          height={160}
+          priority
+        />
+        <div className="space-y-4">
+          <h1 className="text-balance text-4xl font-bold tracking-tight md:text-5xl">
+            Understand any codebase by asking it questions
+          </h1>
+          <p className="mx-auto max-w-xl text-balance text-lg text-muted-foreground">
+            Connect a GitHub repository. AskCode reads every file and answers
+            your questions with references to the exact code.
+          </p>
         </div>
-      </main>
-    </HydrateClient>
+        <SignIn size="lg" className="h-11 px-6" />
+
+        <ul className="mt-12 grid w-full gap-4 text-left md:grid-cols-3">
+          {features.map((feature) => (
+            <li
+              key={feature.title}
+              className="rounded-lg border bg-card p-5 shadow-sm"
+            >
+              <feature.icon className="mb-3 size-5 text-primary" />
+              <h2 className="font-medium">{feature.title}</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {feature.body}
+              </p>
+            </li>
+          ))}
+        </ul>
+      </section>
+    </main>
   );
 }
